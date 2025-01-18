@@ -1,24 +1,12 @@
-# llm-test
+这个项目的是一个拼接图片的项目，用户可以上传多张图片。上传图片后应该按下面要求显示上传图片的预览：
 
-## Project setup
-```
-npm install
-```
+1. 按行纵向显示上传的图片资源
+2. 每行显示的元素包括：图片缩略图（点开缩略图后可预览大图），删除按钮（可删除当前上传的图片资源）
+3. 选择一行后可以拖拽并修改此资源的排列顺序
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+当上传的资源已经调整完毕，我们可以点击一个“开始”的按钮来加工这些图片，需要按下面的方法加工这些图片：
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+1. 选择第一张图片，保持这张图片不变
+2. 接下来所有图片都裁剪保留它最下方的 20% 部分，因为大概率字幕就显示在这块区域
+3. 在第一张图片不变的情况下，将所有剩余图片的 20% 依次拼接在第一张图片的下方，合并成一张完整的图。
+4. 提供一种预览合成图的区域，用户可以选择是否下载这张合成图
