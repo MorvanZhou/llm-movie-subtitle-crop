@@ -12,11 +12,18 @@ export function useImageDrag(images: Ref<ImageFile[]>, onOrderChange?: () => voi
 
   const onDragOver = (event: DragEvent, index: number) => {
     event.preventDefault();
+    if (draggedIndex.value === null) return;
     if (draggedIndex.value === index) {
       dragoverIndex.value = null;
       return;
     }
-    dragoverIndex.value = index;
+
+    const draggingElement = event.currentTarget as HTMLElement;
+    const rect = draggingElement.getBoundingClientRect();
+    const mouseY = event.clientY;
+    const isUpperHalf = mouseY < rect.top + rect.height / 2;
+    
+    dragoverIndex.value = isUpperHalf ? index : index + 1;
   };
 
   const onDragLeave = () => {
