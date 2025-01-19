@@ -1,0 +1,184 @@
+@import '../variables.css';
+
+.double-range-slider {
+  width: 100%;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.double-range-slider.vertical {
+  height: 300px;
+  width: 40px;
+  padding: 10px 0;
+  position: relative;
+}
+
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.range-inputs input {
+  width: 60px;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.range-inputs input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+}
+
+.slider-container {
+  position: relative;
+  height: 10px;
+}
+
+.double-range-slider.vertical .slider-container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.slider-track {
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  background: var(--border-color);
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 2px;
+}
+
+.double-range-slider.vertical .slider-track {
+  position: absolute;
+  width: 4px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  background: var(--border-color);
+}
+
+.slider-range {
+  position: absolute;
+  height: 4px;
+  background: var(--primary-color);
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 2px;
+}
+
+.double-range-slider.vertical .slider-range {
+  position: absolute;
+  width: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.min-slider, .max-slider {
+  position: absolute;
+  width: 100%;
+  top: 45%;
+  left: -2px;
+  transform: translateY(-50%);
+  -webkit-appearance: none;
+  pointer-events: none;
+  background: transparent;
+}
+
+.double-range-slider.vertical .min-slider,
+.double-range-slider.vertical .max-slider {
+  position: absolute;
+  width: 300px;
+  left: -130px;
+  margin: 0;
+  transform-origin: center;
+  transform: rotate(270deg);
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.double-range-slider.vertical .min-slider {
+  top: auto;
+  bottom: 49%;
+}
+
+.double-range-slider.vertical .max-slider {
+  top: 48%;
+  bottom: auto;
+}
+
+.min-slider::-webkit-slider-thumb, .max-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.double-range-slider.vertical .min-slider::-webkit-slider-thumb,
+.double-range-slider.vertical .max-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  border: 2px solid white;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  margin-top: -6px;
+  pointer-events: auto;
+  transform: rotate(90deg);
+}
+
+.double-range-slider.vertical .min-slider::-webkit-slider-runnable-track,
+.double-range-slider.vertical .max-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  background: transparent;
+  border: none;
+}
+
+.min-slider::-webkit-slider-thumb:hover, .max-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+/* Fix hover effects for vertical sliders */
+.double-range-slider.vertical .min-slider::-webkit-slider-thumb:hover,
+.double-range-slider.vertical .max-slider::-webkit-slider-thumb:hover {
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+.min-slider::-moz-range-thumb, .max-slider::-moz-range-thumb {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #007bff;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.double-range-slider.vertical .min-slider::-moz-range-thumb,
+.double-range-slider.vertical .max-slider::-moz-range-thumb {
+  pointer-events: auto;
+}

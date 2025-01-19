@@ -31,19 +31,60 @@
       </div>
     </div>
     <div class="right-panel">
-      <div class="control-section">
-        <div class="crop-control">
-          <label for="crop-percentage">Crop Percentage:</label>
-          <input id="crop-percentage" type="number" v-model.number="cropPercentage" min="5" max="100" />%
+      <div class="result-container">
+        <div class="horizontal-range">
+          <DoubleRangeSlider
+            :model-value="[horizontalStart, horizontalEnd]"
+            @update:model-value="([start, end]) => { horizontalStart = start; horizontalEnd = end }"
+            @change="handleRangeChange"
+          />
         </div>
-        <button v-if="images.length" class="btn btn-success" @click="processImages">Start</button>
-      </div>
-      <div class="result-section">
-        <div v-if="isProcessing" class="loading-spinner"></div>
-        <template v-else-if="mergedImage">
-          <img :src="mergedImage" alt="Result" class="small-preview" @click="previewImage = mergedImage" />
+        
+        <div class="result-wrapper">
+          <div class="result-content">
+            <div v-if="isProcessing" class="loading-spinner"></div>
+            <template v-else-if="mergedImage">
+              <img :src="mergedImage" alt="Result" class="result-preview" @click="previewImage = mergedImage" />
+            </template>
+          </div>
+          
+          <div class="vertical-range">
+            <DoubleRangeSlider
+              vertical
+              :model-value="[verticalStart, verticalEnd]"
+              @update:model-value="([start, end]) => { verticalStart = start; verticalEnd = end }"
+              @change="handleRangeChange"
+            />
+          </div>
+        </div>
+        
+        <div class="crop-control">
+          <label for="crop-percentage">Crop Bottom Percentage:</label>
+          <div class="crop-percentage-input">
+            <input 
+              id="crop-percentage" 
+              type="number" 
+              v-model.number="cropPercentage" 
+              min="5" 
+              max="100" 
+              @change="handleRangeChange" 
+              class="range-number-input"
+            />
+            <span>%</span>
+          </div>
+          <input 
+            type="range" 
+            v-model.number="cropPercentage" 
+            min="5" 
+            max="100"
+            class="range-slider"
+            @change="handleRangeChange"
+          />
+        </div>
+        
+        <div class="result-actions" v-if="mergedImage">
           <button class="btn btn-primary" @click="downloadImage">Download</button>
-        </template>
+        </div>
       </div>
     </div>
     <div v-if="previewImage" class="full-image-modal" @click="previewImage = null">
@@ -53,15 +94,21 @@
 </template>
 
 <script setup lang="ts">
+import '@/assets/styles/variables.css';
 import '@/assets/styles/home.css';
 import { useImageProcessing } from '@/hooks/useImageProcessing';
 import { useImageDrag } from '@/hooks/useImageDrag';
+import DoubleRangeSlider from '@/components/DoubleRangeSlider.vue';
 
 const {
   images,
   mergedImage,
   previewImage,
   cropPercentage,
+  horizontalStart,
+  horizontalEnd,
+  verticalStart,
+  verticalEnd,
   isValidImageFile,
   processImages,
   downloadImage,
@@ -75,19 +122,37 @@ const {
   onDragOver,
   onDragLeave,
   onDrop
-} = useImageDrag(images);
+} = useImageDrag(images, async () => {
+  // 排序后自动更新结果图片
+  if (images.value.length > 0) {
+    await processImages();
+  }
+});
 
-const onFileChange = (event: Event) => {
+const onFileChange = async (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
   if (files) {
-    Array.from(files).forEach(file => {
-      if (isValidImageFile(file)) {
-        const url = URL.createObjectURL(file);
-        images.value.push({ file, url });
-      } else {
-        alert(`Invalid file type: ${file.name}. Please upload only images.`);
-      }
+    const validFiles = Array.from(files).filter(isValidImageFile);
+    
+    if (validFiles.length === 0) {
+      alert('No valid image files selected.');
+      return;
+    }
+
+    // Add all valid files
+    validFiles.forEach(file => {
+      const url = URL.createObjectURL(file);
+      images.value.push({ file, url });
     });
+
+    // Process images immediately after adding them
+    await processImages();
+
+    // Invalid files warning
+    const invalidFiles = Array.from(files).filter(file => !isValidImageFile(file));
+    if (invalidFiles.length > 0) {
+      alert(`${invalidFiles.length} invalid file(s) were skipped.`);
+    }
   }
 };
 
@@ -116,4 +181,18 @@ const replaceImage = (event: Event, index: number) => {
 const showImage = (url: string) => {
   previewImage.value = url;
 };
+
+// 修改 handler 以立即处理图片
+const handleRangeChange = async () => {
+  if (images.value.length > 0) {
+    await processImages();
+    // 滚动到结果区域
+    const resultSection = document.querySelector('.result-section');
+    resultSection?.scrollIntoView({ behavior: 'smooth' });
+  }
+};
 </script>
+
+<style scoped>
+/* 样式已移至 home.css */
+</style>

@@ -6,6 +6,10 @@ export function useImageProcessing() {
   const mergedImage = ref<string | null>(null);
   const previewImage = ref<string | null>(null);
   const cropPercentage = ref(10);
+  const horizontalStart = ref(0);
+  const horizontalEnd = ref(100);
+  const verticalStart = ref(0);
+  const verticalEnd = ref(100);
   const isProcessing = ref(false);
 
   const isValidImageFile = (file: File) => 
@@ -25,17 +29,56 @@ export function useImageProcessing() {
     });
   };
 
-  const cropImage = (img: HTMLImageElement, percentage: number): HTMLCanvasElement => {
+  const cropImageByRange = (img: HTMLImageElement, hStart: number, hEnd: number, vStart: number, vEnd: number): HTMLCanvasElement => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      throw new Error('Failed to get canvas context');
-    }
-    const cropHeight = img.height * (percentage / 100);
-    canvas.width = img.width;
-    canvas.height = cropHeight;
-    ctx.drawImage(img, 0, img.height - cropHeight, img.width, cropHeight, 0, 0, img.width, cropHeight);
+    if (!ctx) throw new Error('Failed to get canvas context');
+
+    const sourceWidth = img.width * ((hEnd - hStart) / 100);
+    const sourceHeight = img.height * ((vEnd - vStart) / 100);
+    const sourceX = img.width * (hStart / 100);
+    const sourceY = img.height * (vStart / 100);
+
+    canvas.width = sourceWidth;
+    canvas.height = sourceHeight;
+    
+    ctx.drawImage(
+      img,
+      sourceX,
+      img.height - sourceY - sourceHeight,  // Start from bottom
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      sourceWidth,
+      sourceHeight
+    );
+    
     return canvas;
+  };
+
+  const cropImageByPercentage = (canvas: HTMLCanvasElement, percentage: number): HTMLCanvasElement => {
+    const resultCanvas = document.createElement('canvas');
+    const ctx = resultCanvas.getContext('2d');
+    if (!ctx) throw new Error('Failed to get canvas context');
+
+    const cropHeight = canvas.height * (percentage / 100);
+    resultCanvas.width = canvas.width;
+    resultCanvas.height = cropHeight;
+
+    ctx.drawImage(
+      canvas,
+      0,
+      canvas.height - cropHeight,
+      canvas.width,
+      cropHeight,
+      0,
+      0,
+      canvas.width,
+      cropHeight
+    );
+
+    return resultCanvas;
   };
 
   const mergeImages = (canvases: (HTMLImageElement | HTMLCanvasElement)[]): string => {
@@ -64,7 +107,26 @@ export function useImageProcessing() {
     isProcessing.value = true;
     try {
       const imageElements = await Promise.all(images.value.map(image => loadImage(image.file)));
-      const croppedImages = [imageElements[0], ...imageElements.slice(1).map(img => cropImage(img, cropPercentage.value))];
+      
+      // 第一步：根据横向和纵向范围裁剪
+      const rangeImages = imageElements.map(img => 
+        cropImageByRange(
+          img,
+          horizontalStart.value,
+          horizontalEnd.value,
+          verticalStart.value,
+          verticalEnd.value,
+        )
+      );
+
+      // 第二步：对第一张以外的图片进行 percentage 裁剪
+      const croppedImages = [
+        rangeImages[0],
+        ...rangeImages.slice(1).map(img => 
+          cropImageByPercentage(img, cropPercentage.value)
+        )
+      ];
+
       mergedImage.value = mergeImages(croppedImages);
     } finally {
       isProcessing.value = false;
@@ -90,6 +152,10 @@ export function useImageProcessing() {
     mergedImage,
     previewImage,
     cropPercentage,
+    horizontalStart,
+    horizontalEnd,
+    verticalStart,
+    verticalEnd,
     isValidImageFile,
     processImages,
     downloadImage,

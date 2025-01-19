@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import type { Ref } from 'vue';
 import type { ImageFile } from '@/types/image';
 
-export function useImageDrag(images: Ref<ImageFile[]>) {
+export function useImageDrag(images: Ref<ImageFile[]>, onOrderChange?: () => void) {
   const draggedIndex = ref<number | null>(null);
   const dragoverIndex = ref<number | null>(null);
 
@@ -12,9 +12,11 @@ export function useImageDrag(images: Ref<ImageFile[]>) {
 
   const onDragOver = (event: DragEvent, index: number) => {
     event.preventDefault();
-    if (index !== draggedIndex.value) {
-      dragoverIndex.value = index;
+    if (draggedIndex.value === index) {
+      dragoverIndex.value = null;
+      return;
     }
+    dragoverIndex.value = index;
   };
 
   const onDragLeave = () => {
@@ -22,12 +24,24 @@ export function useImageDrag(images: Ref<ImageFile[]>) {
   };
 
   const onDrop = (index: number) => {
-    if (draggedIndex.value !== null && draggedIndex.value !== index) {
-      const draggedItem = images.value.splice(draggedIndex.value, 1)[0];
-      images.value.splice(index, 0, draggedItem);
-    }
+    if (draggedIndex.value === null || dragoverIndex.value === null) return;
+    if (draggedIndex.value === dragoverIndex.value) return;
+    
+    const item = images.value[draggedIndex.value];
+    images.value.splice(draggedIndex.value, 1);
+    
+    const targetIndex = dragoverIndex.value > draggedIndex.value 
+      ? dragoverIndex.value - 1 
+      : dragoverIndex.value;
+    
+    images.value.splice(targetIndex, 0, item);
     draggedIndex.value = null;
     dragoverIndex.value = null;
+
+    // 触发排序后的回调
+    if (onOrderChange) {
+      onOrderChange();
+    }
   };
 
   return {
@@ -35,6 +49,6 @@ export function useImageDrag(images: Ref<ImageFile[]>) {
     onDragStart,
     onDragOver,
     onDragLeave,
-    onDrop
+    onDrop,
   };
 }
