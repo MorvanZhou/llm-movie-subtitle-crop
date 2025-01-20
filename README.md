@@ -4,6 +4,9 @@
 
 这个项目耗时 2 小时，利用 LLM 自动生成，中间有少许手动修改的部分，多数时间都是在用对话调整布局和样式，说明 LLM 缺少了视觉信息，所以还是挺难 get 到我想表达的视觉样貌。
 
+
+在线演示 [https://metools.online/movie-subtitle-crop/](https://metools.online/movie-subtitle-crop/)
+
 ![demo](/demo/demo.png)
 
 ## 功能特性
